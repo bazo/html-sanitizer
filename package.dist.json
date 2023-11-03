@@ -1,0 +1,5 @@
+{
+	"name": "@bazo/html-sanitizer",
+	"type": "module",
+	"module": "dist/index.mjs"
+}

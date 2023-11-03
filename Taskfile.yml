@@ -1,0 +1,27 @@
+version: 3
+
+tasks:
+    types:
+        - bun generateTypes.ts
+
+    clean:
+        cmds:
+            - rm types.ts || true
+            - bun del dist/*.*
+
+    build-local:
+        cmds:
+            - task: clean
+            - task: types
+            - bun build index.ts  --target node --format esm --outfile dist/index.mjs
+
+    build:
+        cmds:
+            - task: clean
+            - task: types
+            - bun build index.ts  --target node --format esm --outfile dist/index.mjs --minify
+
+    update-test-output:
+        dir: __test__
+        cmds:
+            - bun generateOutput.ts

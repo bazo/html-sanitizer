@@ -1,53 +1,61 @@
-import html from "./html";
-
-// import sanitizeHtml from "sanitize-html";
-
-// console.log(sanitizeHtml);
-
-// const clean = (dirty: string) =>
-//   sanitizeHtml(dirty, {
-//     allowedTags: sanitizeHtml.defaults.allowedTags.concat(["img"]),
-//   });
-
-// const res = clean(html);
-
-// console.log(res);
-
-import { load, Cheerio, AnyNode, Document, Element } from "cheerio";
+import { load } from "cheerio";
+import type { Cheerio, AnyNode, CheerioAPI } from "cheerio";
 import defaults from "./settings";
+import type { Tag } from "./types";
 
-const $ = load(`<body>${html}</body>`);
+type Settings = typeof defaults;
 
-function cleanNode(node: Cheerio<AnyNode>) {
-	node.removeAttr("class");
+function cleanNode(node: Cheerio<AnyNode>, settings: Settings) {
+	const tag = node.prop("tagName")!.toLowerCase() as Tag;
 
-	const tag = node.prop("tagName")!.toLowerCase();
-	if (defaults.allowedTags.includes(tag)) {
-		const allowedAttributes = defaults.allowedAttributes[tag] ?? []
-		//console.log({allowedAttributes}, node.attr())
+	if ((node.html() ?? "") === "") {
+		node.remove();
+		return;
+	}
+
+	if (settings.allowedTags.includes(tag)) {
+		const allowedAttributes = settings.allowedAttributes[tag] ?? [];
 		Object.keys(node.attr() ?? {}).forEach((attr) => {
-			if(!allowedAttributes.includes(attr)) {
-				node.removeAttr(attr)
+			if (!allowedAttributes.includes(attr)) {
+				node.removeAttr(attr);
 			}
-		})
-		
+		});
+	} else if (tag === "style") {
+		node.remove();
+	} else {
+		node.replaceWith(node.html() ?? "");
 	}
 }
 
-function traverse(children: Cheerio<AnyNode>) {
+function traverse(children: Cheerio<AnyNode>, $: CheerioAPI, settings: Settings) {
 	for (const childEl of children) {
 		const child = $(childEl);
-		//console.log(child.prop("tagName"));
-		//console.log(child.)
 
-		cleanNode(child);
+		const children = child.children();
+		if (children.length > 0) {
+			traverse(children, $, settings);
+		}
 
-		traverse(child.children());
+		cleanNode(child, settings);
 	}
 }
 
-const root = $("body");
+export default function sanitizeHtml(html: string, settings: Settings = defaults): string {
+	const $ = load(html.replaceAll("&nbsp;", ""));
+	const root = $("body");
 
-traverse(root.contents());
+	traverse(root.contents(), $, settings);
 
-console.log(root.html());
+	return root.html() ?? "";
+}
+
+export class Cleaner {
+	private settings: Settings;
+	constructor(settings: Settings = defaults) {
+		this.settings = settings;
+	}
+
+	sanitizeHtml(html: string): string {
+		return sanitizeHtml(html, this.settings);
+	}
+}

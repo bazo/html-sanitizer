@@ -34,14 +34,16 @@
 			}
 		},
 		"ignore": [
-			"node_modules"
+			"node_modules",
+			"dist"
 		]
 	},
 	"formatter": {
 		"indentWidth": 4,
 		"lineWidth": 150,
 		"ignore": [
-			"node_modules"
+			"node_modules",
+			"dist"
 		]
 	}
 }
