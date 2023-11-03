@@ -1,0 +1,16 @@
+{
+  "name": "sanitizer",
+  "module": "index.ts",
+  "type": "module",
+  "devDependencies": {
+    "bun-types": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@types/sanitize-html": "^2.9.3",
+    "cheerio": "^1.0.0-rc.12",
+    "sanitize-html": "^2.11.0"
+  }
+}
